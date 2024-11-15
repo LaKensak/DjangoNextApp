@@ -73,7 +73,7 @@ const PricingPage = () => {
 };
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-white" id="prestation">
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
           Mes Prestations
@@ -98,11 +98,6 @@ const PricingPage = () => {
                   <h3 className="text-xl font-semibold text-center text-gray-800">
                     {session.title}
                   </h3>
-                  {session.id === 'individual' && (
-                    <span className="absolute -top-2 right-4 bg-rose-600 text-white px-3 py-1 rounded-full text-sm">
-                      Plus populaire
-                    </span>
-                  )}
                 </CardHeader>
                 <CardContent className="text-center space-y-4">
                   <div className="flex items-center justify-center space-x-1">
