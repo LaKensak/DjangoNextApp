@@ -17,19 +17,39 @@ const RegisterPage = () => {
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const handleRegister = async () => {
-    if (password !== confirmPassword) {
-      setError('Passwords do not match. Please try again.');
-      return;
-    }
+  if (password !== confirmPassword) {
+    setError('Passwords do not match. Please try again.');
+    return;
+  }
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/register/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: name,
+        email: email,
+        password: password,
+        confirm_password: confirmPassword, // Envoyez confirm_password
+      }),
+    });
 
+    const data = await response.json();
+    console.log(data);
+
+    if (response.ok) {
       setShowSuccessDialog(true);
-    } catch (err) {
-      setError('An error occurred during registration. Please try again.');
+    } else {
+      setError(data.detail || 'An error occurred during registration.');
     }
-  };
+  } catch (err) {
+    setError('Une erreur est survenue durant l\'inscription . Réessayer s\'il vous plait.');
+  }
+};
+
+
 
   return (
     <div className="flex flex-col min-h-screen">
