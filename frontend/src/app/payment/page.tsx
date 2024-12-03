@@ -35,7 +35,7 @@ const PaymentPage = () => {
             </AlertDescription>
           </Alert>
           <button
-            onClick={() => router.push('/pricing')}
+            onClick={() => router.push('/')}
             className="bg-rose-600 text-white px-6 py-2 rounded-lg hover:bg-rose-700 transition-colors duration-300"
           >
             Retour aux prestations

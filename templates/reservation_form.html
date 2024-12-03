@@ -1,0 +1,28 @@
+<!-- templates/reservation_form.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réservation</title>
+</head>
+<body>
+    <h2>Formulaire de Réservation</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Affichage du formulaire -->
+        {{ form.as_p }}
+
+        <!-- Champ caché pour le session_id -->
+        <input type="hidden" name="session_id" value="{{ session_id }}">
+
+        <button type="submit">Confirmer la Réservation</button>
+    </form>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
