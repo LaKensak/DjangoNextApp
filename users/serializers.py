@@ -79,7 +79,10 @@ class ReservationSerializer(serializers.ModelSerializer):
             'status',
             'price',
             'first_name',
-            'email'
+            'email',
+            'address',
+            'phone',
+            'rdv'
         ]
         read_only_fields = ['user', 'reservation_date', 'price', 'status']
 
@@ -87,6 +90,9 @@ class ReservationSerializer(serializers.ModelSerializer):
         # Extraire les champs supplémentaires
         first_name = validated_data.pop('first_name', None)
         email = validated_data.pop('email', None)
+        address = validated_data.pop('address', None)
+        phone = validated_data.pop('phone', None)
+        rdv = validated_data.pop('rdv', None)
 
         # Extraire et valider le sessionId
         session_id = validated_data.pop('sessionId')
@@ -109,6 +115,9 @@ class ReservationSerializer(serializers.ModelSerializer):
             status='Pending',
             first_name=first_name,
             email=email,
+            address=address,
+            phone=phone,
+            rdv=rdv,
             **validated_data
         )
 

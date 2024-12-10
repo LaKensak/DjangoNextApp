@@ -1,9 +1,9 @@
 # users/urls.py
 from django.urls import path
-
 from . import views
 from .views import RegisterView, LoginView, UserProfileView, UpdateProfileView, ChangePasswordView, PaymentListView, \
-    SessionListView, ReservationView, ReservationDetail, ReservationList
+    SessionListView, ReservationView, ReservationDetail, ReservationList, check_availability, \
+    CreatePaymentIntentView, ConfirmPaymentView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -22,4 +22,7 @@ urlpatterns = [
     path('reservations/', ReservationList.as_view(), name='reservation-list'),  # GET/POST
     path('reservations/<int:pk>/', ReservationDetail.as_view(), name='reservation-detail'),  # GET/PUT/DELETE
     path('reservation/<int:session_id>/', ReservationView.as_view(), name='reservation'),
+    path('check_availability/', check_availability, name='check_availability'),
+    path('create-payment-intent/', CreatePaymentIntentView.as_view(), name='create_payment_intent'),
+    path('confirm-payment/', ConfirmPaymentView.as_view(), name='confirm_payment'),
 ]

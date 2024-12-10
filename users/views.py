@@ -1,5 +1,5 @@
 from django.utils import timezone
-
+from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
 from rest_framework.exceptions import ValidationError
 import re
+from rest_framework.decorators import api_view
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Payment
@@ -23,13 +24,15 @@ from .serializers import ReservationSerializer
 from rest_framework import generics
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.views.decorators.http import require_http_methods
 import logging
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views import View
 from .forms import ReservationForm
 from .models import Reservation
-
+import stripe
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -240,39 +243,39 @@ class ReservationList(generics.ListCreateAPIView):
         context['request'] = self.request
         return context
 
-    def create(self, request, *args, **kwargs):
-        try:
-            # Log incoming request data
-            logger.info(f"Reservation request data: {request.data}")
 
-            # Use the serializer with the request context
-            serializer = self.get_serializer(data=request.data)
+def create(self, request, *args, **kwargs):
+    try:
+        # Log incoming request data
+        logger.info(f"Reservation request data: {request.data}")
 
-            # Validate the data
-            serializer.is_valid(raise_exception=True)
+        # Use the serializer with the request context
+        serializer = self.get_serializer(data=request.data)
 
-            # Create the reservation
-            self.perform_create(serializer)
+        # Validate the data
+        serializer.is_valid(raise_exception=True)
 
-            # Return success response
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        # Create the reservation
+        self.perform_create(serializer)
 
-        except serializers.ValidationError as e:
-            # Log validation errors
-            logger.error(f"Validation Error: {str(e)}")
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        except Exception as e:
-            # Log unexpected errors
-            logger.error(f"Unexpected error in reservation creation: {str(e)}")
-            return Response(
-                {'detail': 'An unexpected error occurred'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        # Return success response
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    except serializers.ValidationError as e:
+        # Log validation errors
+        logger.error(f"Validation Error: {str(e)}")
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except Exception as e:
+        # Log unexpected errors
+        logger.error(f"Unexpected error in reservation creation: {str(e)}")
+        return Response(
+            {'detail': 'An unexpected error occurred'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 # Détails d'une réservation
@@ -306,3 +309,101 @@ class ReservationView(View):
             return JsonResponse({'error': 'Formulaire invalide', 'details': form.errors}, status=400)
 
 
+@api_view(['GET'])
+def check_availability(request):
+    rdv = request.query_params.get('rdv')  # Get the date and time from query parameters
+    if rdv is None:
+        return Response({'error': 'Paramètre "rdv" manquant.'}, status=400)
+
+    exists = Reservation.objects.filter(rdv=rdv).exists()  # Check if there's an existing reservation
+    if exists:
+        return Response({'available': False}, status=200)  # If it exists, return False
+    return Response({'available': True}, status=200)
+
+
+class CreatePaymentIntentView(View):
+    """Vue pour créer un PaymentIntent Stripe"""
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request):
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        try:
+            data = json.loads(request.body)
+            amount = data.get('amount')
+            currency = data.get('currency', 'eur')
+            session_id = data.get('session_id')
+
+            # Validation des données
+            if not amount or not session_id:
+                return JsonResponse({'error': 'Paramètres manquants'}, status=400)
+
+            # Vérification de la session
+            try:
+                session = Session.objects.get(id=session_id)
+            except Session.DoesNotExist:
+                return JsonResponse({'error': 'Session non trouvée'}, status=404)
+
+
+            # Création du PaymentIntent
+            payment_intent = stripe.PaymentIntent.create(
+                amount=amount,
+                currency=currency,
+                payment_method_types=['card'],
+                metadata={
+                    'session_id': session_id,
+                }
+            )
+
+            return JsonResponse({
+                'client_secret': payment_intent.client_secret
+            })
+
+        except stripe.error.StripeError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': 'Erreur serveur'}, status=500)
+
+
+class ConfirmPaymentView(View):
+    """Vue pour confirmer un paiement Stripe"""
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request):
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        try:
+            data = json.loads(request.body)
+            payment_intent_id = data.get('payment_intent_id')
+            session_id = data.get('session_id')
+
+            # Vérification du paiement
+            payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+
+            if payment_intent.status == 'succeeded':
+                # Mise à jour de la session
+                session = Session.objects.get(id=session_id)
+                session.is_paid = True
+                session.payment_intent_id = payment_intent_id
+                session.save()
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Paiement confirmé'
+                })
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Paiement non confirmé'
+                }, status=400)
+
+        except stripe.error.StripeError as e:
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': 'Erreur serveur'}, status=500)

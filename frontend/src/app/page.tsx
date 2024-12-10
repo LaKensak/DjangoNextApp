@@ -40,7 +40,7 @@ const LandingPage = () => {
             <div className="bg-rose-50 py-16">
                 <div className="max-w-3xl mx-auto px-4 text-center">
                     <p className="text-2xl italic text-gray-700">
-                        "On ne coupe pas les branches quand la passion défait les nœuds"
+                        "On ne coupe pas la corde quand tu peux défaire les nœuds"
                     </p>
                 </div>
             </div>

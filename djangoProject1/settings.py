@@ -68,6 +68,26 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = ["http://localhost:3000","http://127.0.0.1:3000","http://localhost:3001"]
 
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 ROOT_URLCONF = 'djangoProject1.urls'
 
 SESSION_COOKIE_HTTPONLY = True  # Empêche JavaScript d'accéder aux cookies
@@ -131,7 +151,8 @@ WSGI_APPLICATION = 'djangoProject1.wsgi.application'
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
-
+STRIPE_PUBLISHABLE_KEY = 'pk_live_51QSH8rCO5HGXorY44SVkycr4PnVaFR5Vijs3aRl7yZSyigse1o3OfkoabAeAVv9QYIRiy6OmFp4uN9Cmf9IspiAW0020e28wme'
+STRIPE_SECRET_KEY = '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'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 

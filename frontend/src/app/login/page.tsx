@@ -99,6 +99,12 @@ const LoginPage = () => {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  };
+
   if (!canAccess) return null;
 
   return (
@@ -120,6 +126,7 @@ const LoginPage = () => {
                 placeholder="Entrez votre email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={handleKeyDown} // Ajouté ici
               />
             </div>
             <div className="form-group">
@@ -132,6 +139,7 @@ const LoginPage = () => {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={handleKeyDown} // Ajouté ici
               />
             </div>
             {error && (
