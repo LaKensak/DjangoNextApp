@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import NavBar from "@/app/section/navbar";
 import dynamic from "next/dynamic";
 
-const SettingsPage = dynamic(() => import('@/app/dashboard/settings/page'), {
-  ssr: false, // Active le rendu côté client uniquement si nécessaire
-});
+import SettingsPage from "./settings/page";
+
 // @ts-ignore
 import Cookies from "js-cookie";
 import PaymentsPage from "@/app/dashboard/payments/page";
