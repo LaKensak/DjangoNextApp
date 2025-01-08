@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import NavBar from "@/app/section/navbar";
 import dynamic from "next/dynamic";
 
-import SettingsPage from "./settings/page";
+import SettingsPage from "./settings/components/page";
 
 // @ts-ignore
 import Cookies from "js-cookie";
