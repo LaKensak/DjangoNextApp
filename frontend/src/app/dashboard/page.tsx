@@ -4,7 +4,10 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/app/section/navbar";
 import dynamic from "next/dynamic";
-import SettingsPage from "@/app/dashboard/settings/page";
+
+const SettingsPage = dynamic(() => import('@/app/dashboard/settings/page'), {
+  ssr: false, // Active le rendu côté client uniquement si nécessaire
+});
 // @ts-ignore
 import Cookies from "js-cookie";
 import PaymentsPage from "@/app/dashboard/payments/page";
