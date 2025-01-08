@@ -17,4 +17,4 @@ services:
     startCommand: "npm start"
     envVars:
       - key: NEXT_PUBLIC_BACKEND_URL
-        value: "https://djangonextapp-7.onrender.com"
+        value: "https://djangonextapp-2.onrender.com"
