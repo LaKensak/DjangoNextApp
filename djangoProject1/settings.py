@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-$qgl6nkmr+f9rr$-+p=(vbfg*(2njrbh@4x#m5iwuw_w-e&te$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -64,10 +64,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3000",
-    "django-next-app-napjo.app"
+    "django-next-app-napjo.app",
+    "https://djangonextapp-2.onrender.com"
 ]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000","http://127.0.0.1:3000","http://localhost:3001","django-next-app-napjo.app"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000","http://127.0.0.1:3000","http://localhost:3001","django-next-app-napjo.app","https://djangonextapp-2.onrender.com"]
 
 CORS_ALLOW_METHODS = [
     'DELETE',
