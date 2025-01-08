@@ -25,6 +25,7 @@ interface FormData {
 
 const ReservationPage: React.FC = () => {
     const [isDateAvailable, setIsDateAvailable] = useState<boolean | null>(null);
+    const [isValidTime, setIsValidTime] = useState<boolean>(true);
 
     const checkAvailability = async () => {
         try {
@@ -80,6 +81,13 @@ const ReservationPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        const selectedDateTime = new Date(formData.rdv);
+        const hours = selectedDateTime.getHours();
+        if (hours < 8 || hours >= 18) {
+            setErrorMessage('Les rendez-vous sont uniquement disponibles entre 8h00 et 18h00.');
+            return;
+        }
 
         const isAvailable = await checkAvailability();
         if (!isAvailable) {
@@ -166,6 +174,79 @@ const ReservationPage: React.FC = () => {
         }
     };
 
+    const generateMinMaxDateTime = () => {
+        const now = new Date();
+        const minDateTime = now.toISOString().slice(0, 16);
+
+        // Date maximale dans 3 mois
+        const maxDateTime = new Date(now.getFullYear(), now.getMonth() + 3, now.getDate(), 18, 0)
+            .toISOString().slice(0, 16);
+
+        return {minDateTime, maxDateTime};
+    };
+
+    const {minDateTime, maxDateTime} = generateMinMaxDateTime();
+
+    const handleDateTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedDateTime = new Date(e.target.value);
+        const hours = selectedDateTime.getHours();
+
+        // Vérification des heures autorisées
+        if (hours < 8 || hours >= 18) {
+            setIsValidTime(false);
+            setErrorMessage('Les rendez-vous sont uniquement disponibles entre 8h00 et 18h00.');
+            setFormData({...formData, rdv: ''}); // Réinitialiser la valeur non valide
+            return;
+        }
+
+        // Réinitialiser les messages d'erreur
+        setIsValidTime(true);
+        setErrorMessage('');
+        setFormData({...formData, rdv: e.target.value});
+    };
+
+    const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const hour = parseInt(e.target.value, 10);
+        const currentRdv = new Date(formData.rdv);
+        currentRdv.setHours(hour);
+        setFormData({...formData, rdv: currentRdv.toISOString()});
+    };
+
+    const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const minute = parseInt(e.target.value, 10);
+        const currentRdv = new Date(formData.rdv);
+        currentRdv.setMinutes(minute);
+        setFormData({...formData, rdv: currentRdv.toISOString()});
+    };
+
+    useEffect(() => {
+        const adjustDateTimePicker = () => {
+            const datetimeInput = document.getElementById('appointmentDateTime') as HTMLInputElement;
+
+            if (datetimeInput) {
+                // Ajouter un gestionnaire d'événements pour filtrer les heures
+                datetimeInput.addEventListener('change', () => {
+                    const selectedDateTime = new Date(datetimeInput.value);
+                    const hours = selectedDateTime.getHours();
+
+                    // Heures non autorisées
+                    const invalidHours = Array.from({length: 24}, (_, i) => i)
+                        .filter(hour => hour < 8 || hour >= 18);
+
+                    // Modifier le min et max pour exclure certaines heures
+                    invalidHours.forEach(hour => {
+                        const optionToRemove = datetimeInput.querySelector(`option[value="${hour}"]`);
+                        if (optionToRemove) {
+                            optionToRemove.remove();
+                        }
+                    });
+                });
+            }
+        };
+
+        adjustDateTimePicker();
+    }, []);
+
     return (
         <div className="min-h-screen flex flex-col">
             <NavBar/>
@@ -179,14 +260,23 @@ const ReservationPage: React.FC = () => {
                     </p>
 
                     <div className="grid md:grid-cols-2 gap-8">
-                        {/* Session Details Section */}
+                        {/* Section des détails de la séance */}
                         <section
                             className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
                             <div className="flex items-center mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-rose-500 mr-3"
-                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-8 w-8 text-rose-500 mr-3"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
                                 </svg>
                                 <h3 className="text-xl font-bold text-gray-800">Détails de la Séance</h3>
                             </div>
@@ -195,26 +285,23 @@ const ReservationPage: React.FC = () => {
                                     {label: "Séance", value: sessionDetails.sessionTitle},
                                     {label: "Type", value: sessionDetails.sessionType},
                                     {label: "Durée", value: `${sessionDetails.duration}`},
-                                    {label: "Prix", value: `${sessionDetails.price} €`}
-                                ].map(({label, value}, index) => (
+                                    {label: "Prix", value: `${sessionDetails.price} €`},
+                                ].map(({label, value}) => (
                                     <div
                                         key={label}
-                                        className="bg-white rounded-lg px-4 py-3 shadow-sm border border-gray-100
-                           transform transition-all duration-300
-                           hover:-translate-y-1 hover:shadow-md"
+                                        className="bg-white rounded-lg px-4 py-3 shadow-sm border border-gray-100 transform transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
                                     >
                                         <div className="flex justify-between items-center">
                                             <span className="font-medium text-gray-600">{label}</span>
-                                            <span className="text-gray-800 font-semibold">
-                        {decodeURI(value || 'N/A')}
-                    </span>
+                                            <span
+                                                className="text-gray-800 font-semibold">{decodeURI(value || "N/A")}</span>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </section>
 
-                        {/* Form Section */}
+                        {/* Section du formulaire */}
                         <section>
                             {isLoading && (
                                 <div className="text-center text-blue-600 mb-4">
@@ -227,9 +314,7 @@ const ReservationPage: React.FC = () => {
                                 </div>
                             )}
                             {errorMessage && (
-                                <div className="text-center text-red-600 mb-4">
-                                    {errorMessage}
-                                </div>
+                                <div className="text-center text-red-600 mb-4">{errorMessage}</div>
                             )}
 
                             <form onSubmit={handleSubmit} className="space-y-4">
@@ -275,7 +360,7 @@ const ReservationPage: React.FC = () => {
                                         name="phone"
                                         value={formData.phone}
                                         onChange={(e) => {
-                                            const value = e.target.value.replace(/\D/g, '');
+                                            const value = e.target.value.replace(/\D/g, "");
                                             setFormData({...formData, phone: value});
                                         }}
                                         inputMode="numeric"
@@ -312,14 +397,15 @@ const ReservationPage: React.FC = () => {
                                         id="appointmentDateTime"
                                         name="appointmentDateTime"
                                         value={formData.rdv}
-                                        onChange={(e) => setFormData({...formData, rdv: e.target.value})}
+                                        onChange={handleDateTimeChange}
+                                        min={minDateTime}
+                                        max={maxDateTime}
                                         required
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
                                     />
-                                    {isDateAvailable === false && (
+                                    {(!isValidTime || isDateAvailable === false) && (
                                         <p className="text-red-600 text-sm mt-2">
-                                            Cette date et heure sont déjà réservées. Veuillez choisir une autre plage
-                                            horaire.
+                                            {errorMessage || "Cette date et heure sont déjà réservées."}
                                         </p>
                                     )}
                                 </div>
@@ -329,29 +415,28 @@ const ReservationPage: React.FC = () => {
                                         <input
                                             type="checkbox"
                                             checked={formData.gdprConsent}
-                                            onChange={() => setFormData({
-                                                ...formData,
-                                                gdprConsent: !formData.gdprConsent
-                                            })}
+                                            onChange={() =>
+                                                setFormData({...formData, gdprConsent: !formData.gdprConsent})
+                                            }
                                             required
                                             className="h-4 w-4 text-rose-600 border-gray-300 rounded focus:ring-rose-500"
                                         />
                                         <span className="text-sm text-gray-600">
-                                            J'accepte la{' '}
+                                        J'accepte la{" "}
                                             <a
                                                 href="/terms"
                                                 className="text-rose-600 hover:underline focus:outline-none focus:ring-2 focus:ring-rose-500"
                                             >
-                                                politique de confidentialité
-                                            </a>{' '}
-                                            et{' '}
+                                            politique de confidentialité
+                                        </a>{" "}
+                                            et{" "}
                                             <a
                                                 href="/terms"
                                                 className="text-rose-600 hover:underline focus:outline-none focus:ring-2 focus:ring-rose-500"
                                             >
-                                                les conditions d'utilisation
-                                            </a>.
-                                        </span>
+                                            les conditions d'utilisation
+                                        </a>.
+                                    </span>
                                     </label>
                                 </div>
 
@@ -359,11 +444,9 @@ const ReservationPage: React.FC = () => {
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="w-full px-6 py-3 rounded-lg bg-rose-600 text-white
-                                        hover:bg-rose-700 transition-colors duration-300
-                                        disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full px-6 py-3 rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {isLoading ? 'Confirmation en cours...' : 'Confirmer la réservation'}
+                                        {isLoading ? "Confirmation en cours..." : "Confirmer la réservation"}
                                     </button>
                                 </div>
                             </form>
@@ -374,6 +457,7 @@ const ReservationPage: React.FC = () => {
             <Footer/>
         </div>
     );
+
 };
 
 export default ReservationPage;

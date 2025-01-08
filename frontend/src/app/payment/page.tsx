@@ -195,7 +195,7 @@ const PaymentForm = () => {
         setError(null);
 
         if (!stripe || !elements) {
-            setError('Stripe.js not loaded');
+            setError('Stripe.js n\'est pas charger');
             setLoading(false);
             return;
         }

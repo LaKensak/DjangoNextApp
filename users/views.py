@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
@@ -249,6 +251,23 @@ def create(self, request, *args, **kwargs):
         # Log incoming request data
         logger.info(f"Reservation request data: {request.data}")
 
+        # Récupérer et valider la date du rendez-vous
+        rdv = request.data.get('rdv')
+        if rdv is None:
+            return Response({'error': 'Paramètre "rdv" manquant.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            rdv_datetime = datetime.fromisoformat(rdv)
+        except ValueError:
+            return Response({'error': 'Format de date/heure invalide. Utilisez ISO 8601.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Vérifier les horaires
+        if rdv_datetime.hour < 8 or rdv_datetime.hour >= 18:
+            return Response(
+                {'error': 'Les rendez-vous ne peuvent être pris qu\'entre 8h et 18h.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         # Use the serializer with the request context
         serializer = self.get_serializer(data=request.data)
 
@@ -315,9 +334,21 @@ def check_availability(request):
     if rdv is None:
         return Response({'error': 'Paramètre "rdv" manquant.'}, status=400)
 
-    exists = Reservation.objects.filter(rdv=rdv).exists()  # Check if there's an existing reservation
+    try:
+        # Convertir le paramètre en objet datetime
+        rdv_datetime = datetime.fromisoformat(rdv)
+    except ValueError:
+        return Response({'error': 'Format de date/heure invalide. Utilisez ISO 8601.'}, status=400)
+
+    # Vérifier les horaires
+    if rdv_datetime.hour < 8 or rdv_datetime.hour >= 18:
+        return Response({'error': 'Les rendez-vous ne peuvent être pris qu\'entre 8h et 18h.'}, status=400)
+
+    # Check if there's an existing reservation
+    exists = Reservation.objects.filter(rdv=rdv_datetime).exists()
     if exists:
         return Response({'available': False}, status=200)  # If it exists, return False
+
     return Response({'available': True}, status=200)
 
 
