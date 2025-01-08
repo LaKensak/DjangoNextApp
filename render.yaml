@@ -1,8 +1,20 @@
 services:
-  - type: web
-    name: frontend
+  - name: django-backend
+    type: web
+    env: python
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+    startCommand: "gunicorn djangoProject1.wsgi"
+    envVars:
+      - key: SECRET_KEY
+        value: "django-insecure-$qgl6nkmr+f9rr$-+p=(vbfg*(2njrbh@4x#m5iwuw_w-e&te$"
+      - key: DATABASE_URL
+        value: "mysql-rcharkaoui.alwaysdata.net"
+
+  - name: nextjs-frontend
+    type: web
     env: node
-    buildCommand: yarn install
-    startCommand: yarn start
-    directory: frontend  # Spécifiez ici le répertoire frontend
-    plan: starter
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
+    envVars:
+      - key: NEXT_PUBLIC_BACKEND_URL
+        value: "https://django-backend.onrender.com"

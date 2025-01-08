@@ -161,10 +161,10 @@ STRIPE_SECRET_KEY = 'sk_live_51QSH8rCO5HGXorY4w4Co1TpCYr4ShVf6rmrRFw610HYugGBhK8
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'projet_stage',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
+        'NAME': 'rcharkaoui_coach',
+        'USER': '339575',
+        'PASSWORD': 'Marocco80',
+        'HOST': 'mysql-rcharkaoui.alwaysdata.net',
         'PORT': '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',

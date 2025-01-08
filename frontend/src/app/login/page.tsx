@@ -36,7 +36,7 @@ const LoginPage = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/login/', {
+      const response = await fetch('${process.env.BACKEND_URL}/api/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ const LoginPage = () => {
         });
 
         // Obtenir les informations utilisateur
-        const userResponse = await fetch('http://127.0.0.1:8000/api/user/', {
+        const userResponse = await fetch('${process.env.BACKEND_URL}/api/user/', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${data.access}`,
