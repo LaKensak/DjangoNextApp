@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-// @ts-ignore
+// @ts-expect-error
 import Cookies from "js-cookie";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 

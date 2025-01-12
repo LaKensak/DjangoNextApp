@@ -5,7 +5,7 @@ import {useRouter} from 'next/navigation';
 import {Card, CardHeader, CardContent, CardFooter} from '@/components/ui/card';
 import {Clock, Euro, Video, Users} from 'lucide-react';
 
-// @ts-ignore
+// @ts-expect-error
 import Cookies from "js-cookie";
 
 interface Session {

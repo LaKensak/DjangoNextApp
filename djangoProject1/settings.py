@@ -9,8 +9,11 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+import os
 from datetime import timedelta
 from pathlib import Path
+import pymysql
+pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,8 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$qgl6nkmr+f9rr$-+p=(vbfg*(2njrbh@4x#m5iwuw_w-e&te$'
-
+# SECRET_KEY = 'django-insecure-$qgl6nkmr+f9rr$-+p=(vbfg*(2njrbh@4x#m5iwuw_w-e&te$'
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key-for-local')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
@@ -160,16 +163,23 @@ STRIPE_SECRET_KEY = 'sk_live_51QSH8rCO5HGXorY4w4Co1TpCYr4ShVf6rmrRFw610HYugGBhK8
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'rcharkaoui_coach',
-        'USER': '339575',
-        'PASSWORD': 'Marocco80',
-        'HOST': 'mysql-rcharkaoui.alwaysdata.net',
-        'PORT': '3306',
+        'NAME': os.getenv('MYSQL_DATABASE', 'rcharkaoui_coach'),
+        'USER': os.getenv('MYSQL_USER', '339575'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'Marocco80'),
+        'HOST': os.getenv(
+            'DATABASE_HOST',
+            'db' if os.getenv('ENV') == 'development' else 'mysql-rcharkaoui.alwaysdata.net'
+        ),
+        'PORT': os.getenv('DATABASE_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
-        }
+        },
     }
 }
+
+
+
+
 
 
 # Password validation

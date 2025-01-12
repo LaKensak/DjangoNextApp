@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/app/section/navbar";
 import SettingsPage from "@/app/dashboard/settings/page";
-// @ts-ignore
+// @ts-expect-error
 import Cookies from "js-cookie";
 import PaymentsPage from "@/app/dashboard/payments/page";
 

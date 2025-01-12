@@ -25,7 +25,8 @@ const RegisterPage = () => {
     }
 
     try {
-      const response = await fetch('${process.env.BACKEND_URL}/api/register/', {
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const response = await fetch(`${BACKEND_URL}/api/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

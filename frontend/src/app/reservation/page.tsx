@@ -1,7 +1,7 @@
 "use client";
 import React, {useState, useEffect} from 'react';
 import {useRouter} from 'next/navigation';
-// @ts-ignore
+// @ts-expect-error
 import Cookies from 'js-cookie';
 import NavBar from "@/app/section/navbar";
 import Footer from "@/app/section/footer";

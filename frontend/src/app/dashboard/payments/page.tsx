@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-// @ts-ignore
+// @ts-expect-error
 import Cookies from "js-cookie";
 
 const PaymentsPage = () => {
